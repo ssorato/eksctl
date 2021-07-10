@@ -1,0 +1,63 @@
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: eks-lab
+  region: us-east-1
+
+vpc:
+  id: vpc-0a9b4d0a386a7b494
+  cidr: "192.168.231.0/24"
+  subnets:
+    public:
+      public-one:
+        id: subnet-03d820ef0d4dd3bf9
+      public-two:
+        id: subnet-0da52769c7e277f54
+    private:
+      private-one:
+        id: subnet-0550b44eb8eb05c6c
+      private-two:
+        id: subnet-0f02c6f4013f180c1
+
+managedNodeGroups:
+  - name: ng-micro-managed
+    instanceType: t2.micro
+    minSize: 2
+    maxSize: 4
+    desiredCapacity: 3
+    volumeSize: 8
+    subnets:
+      - public-one
+      - public-two
+    iam:
+      withAddonPolicies:
+        albIngress: true
+        autoScaler: true
+        cloudWatch: false
+    ssh: # use existing EC2 key
+      publicKeyName: eks-lab.pem
+    tags:
+      nodegroup-name: ng-micro
+
+fargateProfiles:
+  - name: fp-default
+    selectors:
+      # All workloads in the "default" Kubernetes namespace will be
+      # scheduled onto Fargate:
+      - namespace: default
+      # All workloads in the "kube-system" Kubernetes namespace will be
+      # scheduled onto Fargate:
+      - namespace: kube-system
+  - name: fp-dev
+    selectors:
+      # All workloads in the "dev" Kubernetes namespace matching the following
+      # label selectors will be scheduled onto Fargate:
+      - namespace: dev
+        labels:
+          env: dev
+          checks: passed
+    tags:
+      env: dev
+      name: fp-dev

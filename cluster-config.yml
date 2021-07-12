@@ -37,7 +37,7 @@ managedNodeGroups:
         autoScaler: true
         cloudWatch: false
     ssh: # use existing EC2 key
-      publicKeyName: eks-lab.pem
+      publicKeyName: new2-aws-simone
     tags:
       nodegroup-name: ng-micro
 
